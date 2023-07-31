@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+'use client'
+import React, { useState, useEffect } from "react";
 // import Link from "next/link";
 import Select from "react-select";
 import Breadcrum from "../components/common/Breadcrum";
@@ -11,11 +12,16 @@ import SwiperCore, { Autoplay, Navigation, Pagination } from "swiper";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {pallete} from '../utils/keys'
+import { MoonLoader } from "react-spinners";
 SwiperCore.use([Navigation, Pagination, Autoplay]);
 function Booking() {
   const [startDate1, setStartDate1] = useState(false);
-  // const [startDate2, setStartDate2] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [Guests, setGuests] = useState(null);
+  const [HowLong, setHowLong] = useState(null);
+  const [StartTime, setStartTime] = useState(null);
+  const [PriceTotal, setPriceTotal] = useState(0);
+  const [LaneQty, setLaneQty] = useState();
+  const [IsProcessing, setIsProcessing] = useState(false)
   const options = [
     { value: 1, label: "1 Hour" },
     { value: 2, label: "2 Hours (Popular)" },
@@ -34,35 +40,6 @@ function Booking() {
     { value: 6, label: "6 Lanes" },
   ]
   , guestOptions = Array.from({length: 72}, (_, index) => {return {value: index + 1, label: index + 1}})
-  , offerTimeOptions = [
-    { value: 1, label: "10:00 AM", price: '180.00', isSelected: true },
-    { value: 2, label: "10:30 AM", price: '180.00' },
-    { value: 2, label: "11:00 AM", price: '180.00' },
-    { value: 2, label: "11:30 AM", price: '180.00' },
-    { value: 2, label: "12:00 AM", price: '180.00' },
-    { value: 2, label: "12:30 AM", price: '180.00' },
-    { value: 2, label: "1:00 PM", price: '180.00' },
-    { value: 2, label: "1:30 PM", price: '180.00' },
-    { value: 2, label: "2:00 PM", price: '180.00' },
-    { value: 2, label: "2:30 PM", price: '180.00' },
-    { value: 2, label: "3:00 PM", price: '180.00' },
-    { value: 2, label: "3:30 PM", price: '180.00' },
-    { value: 2, label: "4:00 PM", price: '180.00' },
-    { value: 2, label: "4:30 PM", price: '215.00' },
-    { value: 2, label: "5:00 PM", price: '250.00' },
-    { value: 2, label: "5:30 PM", price: '250.00' },
-    { value: 2, label: "6:00 PM", price: '250.00' },
-    { value: 2, label: "6:30 PM", price: '250.00' },
-    { value: 2, label: "7:00 PM", price: '250.00' },
-    { value: 2, label: "7:30 PM", price: '250.00' },
-    { value: 2, label: "8:00 PM", price: '250.00' },
-    { value: 2, label: "8:30 PM", price: '250.00' },
-    { value: 2, label: "9:00 PM", price: '250.00' },
-    { value: 2, label: "9:30 PM", price: '250.00' },
-    { value: 2, label: "10:00 PM", price: '250.00' },
-    { value: 2, label: "10:30 PM", price: '250.00' },
-    { value: 2, label: "11:00 PM", price: '250.00' },
-  ]
   , customStyles = {
     menu: (provided, state) => ({
       ...provided,
@@ -104,8 +81,8 @@ function Booking() {
       position:"relative !important",
       top: "2px"
     }),
-  };
-  const roomsuitsSlider = {
+  }
+  , roomsuitsSlider = {
     loop: true,
     loopFillGroupWithBlank: true,
     speed: 2000,
@@ -116,79 +93,50 @@ function Booking() {
       nextEl: ".swiper-button-next-m",
       prevEl: ".swiper-button-prev-m",
     },
-  };
-  // const roomSlide = {
-  //   slidesPerView: "auto",
-  //   spaceBetween: 40,
-  //   loop: true,
-  //   loopFillGroupWithBlank: true,
-  //   speed: 1500,
-  //   autoplay: {
-  //     delay: 2000,
-  //   },
-  //   navigation: {
-  //     nextEl: ".swiper-button-next-n",
-  //     prevEl: ".swiper-button-prev-n",
-  //   },
-  //   breakpoints: {
-  //     280: {
-  //       slidesPerView: 1,
-  //     },
-  //     480: {
-  //       slidesPerView: 1,
-  //     },
-  //     768: {
-  //       slidesPerView: 2,
-  //     },
-  //     992: {
-  //       slidesPerView: 3,
-  //     },
-  //     1200: {
-  //       slidesPerView: 3,
-  //     },
-  //     1400: {
-  //       slidesPerView: 3,
-  //     },
-  //     1600: {
-  //       slidesPerView: 3,
-  //     },
-  //   },
-  // };
-  const BookingComponent = () => {
+  }
+  , offerTimeOptions = [
+    { value: 1, label: "10:00 AM", price: 180},
+    { value: 2, label: "10:30 AM", price: 180 },
+    { value: 3, label: "11:00 AM", price: 180 },
+    { value: 4, label: "11:30 AM", price: 180 },
+    { value: 5, label: "12:00 AM", price: 180 },
+    { value: 6, label: "12:30 AM", price: 180 },
+    { value: 7, label: "1:00 PM", price: 180 },
+    { value: 8, label: "1:30 PM", price: 180 },
+    { value: 9, label: "2:00 PM", price: 180 },
+    { value: 10, label: "2:30 PM", price: 180 },
+    { value: 11, label: "3:00 PM", price: 180 },
+    { value: 12, label: "3:30 PM", price: 180 },
+    { value: 13, label: "4:00 PM", price: 180 },
+    { value: 14, label: "4:30 PM", price: 215 },
+    { value: 15, label: "5:00 PM", price: 250 },
+    { value: 16, label: "5:30 PM", price: 250 },
+    { value: 17, label: "6:00 PM", price: 250 },
+    { value: 18, label: "6:30 PM", price: 250 },
+    { value: 19, label: "7:00 PM", price: 250 },
+    { value: 20, label: "7:30 PM", price: 250 },
+    { value: 21, label: "8:00 PM", price: 250 },
+    { value: 22, label: "8:30 PM", price: 250 },
+    { value: 23, label: "9:00 PM", price: 250 },
+    { value: 24, label: "9:30 PM", price: 250 },
+    { value: 25, label: "10:00 PM", price: 250 },
+    { value: 26, label: "10:30 PM", price: 250 },
+    { value: 27, label: "11:00 PM", price: 250 },
+  ]
+  , BookingComponent = () => {
     return <div className="widget-area2">
-    <div className="widget-title"><h5>Book a Lane</h5></div>
-    <div className="single-widgets booking-widgets">
+      <div className="widget-title"><h5>Book a Lane</h5></div>
+      <div className="single-widgets booking-widgets">
       <div className="mb-2">
         <label className="fw-bold mb-1" style={{fontSize: 18}}>What Date?</label>
         {/* <p className="text">Most guests book 2 hours to ensure they have the best experience.</p> */}
       </div>
       <div className="searchbox-input date-picker-input input__list">
         <ReactDatePicker
-          minDate={new Date("07-01-2023")}
-          maxDate={new Date("07-01-2024")}
-          selected={startDate1}
-          onChange={(date) => setStartDate1(date)}
-          dateFormat='dd/MM/y' className="claender"
-          placeholderText="Date" 
+          minDate={new Date("07-01-2023")} maxDate={new Date("07-01-2024")} selected={startDate1} onChange={(date) => setStartDate1(date)} dateFormat='dd/MM/y' className="claender" placeholderText="Date" 
         />
       </div>
-      {/* <div className="wp-block-text__inside-wrapper ">
-        <i className="bx bx-user" />
-        <input type="text" placeholder="Your Full Name" />
-      </div> */}
-      {/* <div className="wp-block-text__inside-wrapper ">
-        <i className="bx bx-user" />
-        <input type="text" placeholder="Your Full Name" />
-      </div>
-      <div className="wp-block-text__inside-wrapper ">
-        <i className="bx bx-envelope" />
-        <input type="email" placeholder="Your Email" />
-      </div>
-      */}
-       {/* <div className="wp-block-text__inside-wrapper ">
-        <i className="bx bx-phone-call" />
-        <input type="text" placeholder="Phone" />
-      </div> */}
+      {/* Guests */}
       <div className="mb-2">
         <label className="fw-bold mb-1" style={{fontSize: 18}}>Number of Guests?</label>
         <p className="text">In order to ensure we have the appropriate number of resources reserved for your group, please tell us how many people are expected.</p>
@@ -208,19 +156,17 @@ function Booking() {
                   primary: pallete.primary,
                 },
               })}
-              styles={customStyles}
-              components={{IndicatorSeparator: () => null,}}
-              width="230px" menuColor="#333" placeholder="Guests"
-              defaultValue={selectedOption}
-              options={guestOptions}
+              styles={customStyles} components={{IndicatorSeparator: () => null,}}
+              onChange={setGuests} defaultValue={Guests}
+              width="230px" menuColor="#333" placeholder="Guests" options={guestOptions}
             />
       </div>
+      {/* Lanes */}
       <div className="mb-2">
-        <label className="fw-bold mb-1" style={{fontSize: 18}}>How long?</label>
-        <p className="text">Most guests book 2 hours to ensure they have the best experience.</p>
+        <label className="fw-bold mb-1" style={{fontSize: 18}}>For 6 guests we recommend 2 lanes</label>
+        <p className="text">If you want to change the number of lanes please choose below.</p>{/* If your reservation is more than 10 lanes, please call +6012-2310277 */}
       </div>
-      <div className="wp-block-text__inside-wrapper select-items">
-        <i className="bi bi-clock" />
+      <div className="wp-block-text__inside-wrapper select-items"><i className="bi bi-layers" />
         <Select
               theme={(theme) => ({
                 ...theme,
@@ -228,89 +174,90 @@ function Booking() {
                 padding: 0,
                 width: 350,
                 colors: {
-                  ...theme.colors,
-                  primary25: "#f6f6f6",
-                  primary50: pallete.primary,
-                  primary: pallete.primary,
-                },
+                  ...theme.colors, primary25: "#f6f6f6", primary50: pallete.primary, primary: pallete.primary,
+                }
               })}
-              styles={customStyles}
-              components={{IndicatorSeparator: () => null,}}
-              width="230px"
-              menuColor="#333"
-              defaultValue={selectedOption}
-              options={options}
-              placeholder="Time"
-            />
+              styles={customStyles} components={{IndicatorSeparator: () => null,}} width="230px" menuColor="#333" placeholder="Lanes"
+              defaultValue={LaneQty} options={lanesOptions} 
+              onChange={(v) => {
+                // setIsProcessing(true)
+                setLaneQty(v)
+                // setTimeout(() => {setIsProcessing(false)}, 500);
+              }}
+      /></div>
+      {/* How Long */}
+      <div className="mb-2">
+        <label className="fw-bold mb-1" style={{fontSize: 18}}>How long?</label>
+        <p className="text">Most guests book 2 hours to ensure they have the best experience.</p>
       </div>
+      <div className="wp-block-text__inside-wrapper select-items"><i className="bi bi-clock" />
+        <Select
+              theme={(theme) => ({
+                ...theme,
+                borderRadius: 0,
+                padding: 0,
+                width: 350,
+                colors: {...theme.colors, primary25: "#f6f6f6", primary50: pallete.primary, primary: pallete.primary}
+              })}
+              styles={customStyles} components={{IndicatorSeparator: () => null,}}
+              width="230px" menuColor="#333" placeholder="Time"
+              options={options} onChange={setHowLong}
+              defaultValue={HowLong}
+        />
+      </div>
+      {/* Start Time */}
       <div className="mb-1">
         <label className="fw-bold mb-1" style={{fontSize: 18}}>We can offer you the following start times</label>
       </div>
       <div className="row wp-block-tag-cloud g-1 mb-3">
         {offerTimeOptions.map((i, index) => {
-          return <div className="col-md-4" key={index}><div className={`box ${i.isSelected && 'selected'}`}>
-            <div className="main">
-              {i.label}
-              <div className="price">RM {i.price}</div>
-            </div>
-            <div className="avaib" style={{backgroundColor: '#00d500'}}>
-            </div>
-          </div></div>
+          return <div className="col-md-4" key={index}>
+            <input type='radio' name="time-start" value={i.value} hidden id={"timestart_"+i.value}
+              checked={StartTime == i.value}
+              onChange={(e)=>{
+                setStartTime(e.target.value)
+                // setIsProcessing(true) setTimeout(() => {setIsProcessing(false)}, 400);
+              }} />
+            <label htmlFor={"timestart_"+i.value} className='d-block'>
+              <div className={`box`}>{/* ${i.isSelected && 'selected'} */}
+                <div className="main">
+                  <div>{i.label}</div>
+                  <div className="price">RM {i.price}.00</div>
+                </div>
+                <div className="avaib" style={{backgroundColor: '#00d500'}} />
+              </div>
+            </label>
+          </div>
         })}
       </div>
-      {/* <div className="wp-block-text__inside-wrapper select-items">
-        <i className="bi bi-clock" />
-        <Select
-              theme={(theme) => ({
-                ...theme,
-                borderRadius: 0,
-                padding: 0,
-                width: 350,
-                colors: {
-                  ...theme.colors,
-                  primary25: "#f6f6f6",
-                  primary50: pallete.primary,
-                  primary: pallete.primary,
-                },
-              })}
-              styles={customStyles}
-              components={{IndicatorSeparator: () => null,}}
-              width="230px" menuColor="#333" placeholder="Available Hours"
-              defaultValue={selectedOption}
-              options={offerTimeOptions}
-            />
-      </div> */}
-      <div className="mb-2">
-        <label className="fw-bold mb-1" style={{fontSize: 18}}>For 6 guests we recommend 2 lanes</label>
-        <p className="text">If you want to change the number of lanes please choose below.</p>
-        {/* If your reservation is more than 10 lanes, please call +6012-2310277 */}
-      </div>
-      <div className="wp-block-text__inside-wrapper select-items">
-        <i className="bi bi-layers" />
-        <Select
-              theme={(theme) => ({
-                ...theme,
-                borderRadius: 0,
-                padding: 0,
-                width: 350,
-                colors: {
-                  ...theme.colors,
-                  primary25: "#f6f6f6",
-                  primary50: pallete.primary,
-                  primary: pallete.primary,
-                },
-              })}
-              styles={customStyles}
-              components={{IndicatorSeparator: () => null,}}
-              width="230px" menuColor="#333" placeholder="Lanes"
-              defaultValue={selectedOption} options={lanesOptions}
-            />
-      </div>
-      <div className="wp-block-text__inside-wrapper submit-btn"><button type="submit">Confirm my Booking</button></div>
+      <div className="wp-block-text__inside-wrapper submit-btn"><button type="submit">Confirm Booking</button></div>
     </div>
   </div>
   }
-  return (<Layout>
+  , calcPriceHours = (startTimeObj, period) => {
+    const periodFilters = Array(period).fill(startTimeObj.value).map((n, i) => {
+      if (i == 0) return n+i
+      return n + (i*2)
+    })
+    const filtered = offerTimeOptions.filter(i => periodFilters.includes(i.value))
+    return filtered.map(i => i.price).reduce((pv, cv) => pv + cv, 0);
+  }
+  useEffect(() => {
+    if (typeof LaneQty ==='object' && LaneQty && StartTime > 0 && typeof HowLong ==='object' && HowLong) {
+      setIsProcessing(true)
+      const findPrice = offerTimeOptions.find(i => i.value == StartTime)
+      const total = calcPriceHours(findPrice, HowLong.value) * LaneQty.value
+      setPriceTotal(total)
+      setTimeout(() => {
+        setIsProcessing(false)
+      }, 900);
+    }
+  }, [LaneQty, StartTime, HowLong])
+  return (<Layout price={PriceTotal}>
+    {IsProcessing && <div className="loader-box">
+      <MoonLoader color={pallete.primary} size={80} aria-label="Loading Spinner" data-testid="loader" title="Loading" />
+      <div className="fw-bold h5 mt-3">Calculating...</div>
+    </div>}
       <Breadcrum pageName="Booking" pageTitle="Book Now" />
       <div className="room-suits-details-page pt-80 mb-120">
         <div className="container">
@@ -360,15 +307,15 @@ function Booking() {
                     <div className="h6 fw-normal">Booking</div>
                   </div>
                   <div className="col-xl-6">
-                    <div className="h6 text-color-primary text-end">RM 360.00</div>
+                    <div className="h6 text-color-primary text-end">RM {PriceTotal}.00</div>
                   </div>
                 </div>
                 <div className="row mt-2">
                   <div className="col-xl-6">
-                    <div className="h6 fw-normal">Platform Fee</div>
+                    <div className="h6 fw-normal">Discount</div>
                   </div>
                   <div className="col-xl-6">
-                    <div className="h6 text-color-primary text-end">RM 8.00</div>
+                    <div className="h6 text-color-primary text-end">RM 0.00</div>
                   </div>
                 </div>
                 <div className="row mt-2">
@@ -376,42 +323,10 @@ function Booking() {
                     <div className="h6 fw-normal">Total</div>
                   </div>
                   <div className="col-xl-6">
-                    <div className="h6 text-color-primary text-end">RM 368.00</div>
+                    <div className="h6 text-color-primary text-end">RM {PriceTotal}.00</div>
                   </div>
                 </div>
               </div>
-              {/* <div className="widget-area2">
-                <div className="widget-title">
-                  <h5>Summer Offer </h5>
-                </div>
-                <div className="single-widgets Post-widgets">
-                  <SummarOffer
-                    image="assets/images/bg/room-st-1.png"
-                    title="Donec imperdiet estan ultrices sollicitudi."
-                    price="$79.00"
-                  />
-                  <SummarOffer
-                    image="assets/images/bg/room-st-2.png"
-                    title="San Francisco Goldenc Gateden Bridge."
-                    price="$66.00"
-                  />
-                  <SummarOffer
-                    image="assets/images/bg/room-st-3.png"
-                    title="inibus mi, et tincidui odion Donec eu."
-                    price="$74.00"
-                  />
-                  <SummarOffer
-                    image="assets/images/bg/room-st-4.png"
-                    title="Vestibulum luctus hel neque et blandit."
-                    price="$44.00"
-                  />
-                  <SummarOffer
-                    image="assets/images/bg/room-st-5.png"
-                    title="Mauris vitae nibh null Morbi convallis."
-                    price="$34.00"
-                  />
-                </div>
-              </div> */}
             </div>
           </div>
           {/* <div className="row">

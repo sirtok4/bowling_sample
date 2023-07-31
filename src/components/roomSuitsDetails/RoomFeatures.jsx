@@ -4,7 +4,7 @@ function RoomFeatures() {
   return (
     <>
       <div className="price-tag">
-        <span>RM 50.00</span> / Per Lane
+        <span>RM 180.00</span> / Per Lane
       </div>
 
       <h2>Your Birthday with Us</h2>

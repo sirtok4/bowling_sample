@@ -3,7 +3,7 @@ import Head from "next/head";
 import Footer from "../footer/Footer";
 import LayoutHeader from "../header/LayoutHeader";
 
-function Layout({ children }) {
+function Layout({ children, price }) {
   return (
     <>
       <Head>
@@ -13,7 +13,7 @@ function Layout({ children }) {
         <meta name="description" content="" />
         <link rel="icon" href="assets/images/bg/sm-logo.png" />
       </Head>
-      <LayoutHeader />
+      <LayoutHeader price={price} />
       {children}
       <Footer />
     </>

@@ -22,8 +22,7 @@ function reducer(state, action) {
   }
 }
 
-function Header2() {
-
+function Header2({price}) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const router = useRouter();
   const currentRoute = router.pathname;
@@ -347,9 +346,13 @@ function Header2() {
                       <a href="#">02</a>
                     </div>
                   </div> */}
+                  {typeof price ==='number' && <div className="text-end">
+                    <div className="fw-bold fst-italic">Total</div>
+                    <div className="fw-bold h5 text-color-primary" style={{margin:0}}>RM {price}.00</div>
+                  </div>}
                   <div className="header-btn">
                     <Link href="/booking">
-                      <a className="btn--primary eg-btn">Book Now</a>
+                      <a className="btn--primary eg-btn">{typeof price ==='number' ? 'Confirm Booking' : 'Book Now'}</a>
                     </Link>
                   </div>
                   <div
