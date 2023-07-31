@@ -4,4 +4,4 @@ A simple Bowling website sample using one of the latest technologies available i
 
 ## Demo
 
-- [Checkout the Demo here](https://cars-showcase-xy4r.vercel.app/)
+- [Checkout the Demo here](https://bowling-sample.vercel.app/)
